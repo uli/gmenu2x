@@ -35,7 +35,7 @@ FileDialog::FileDialog(GMenu2X *gmenu2x, string text, string filter, string file
 	this->text = text;
 	this->filter = filter;
 	this->file = "";
-	setPath("/mnt");
+	setPath("/boot/local");
 	title = "File Browser";
 	if (!file.empty()) {
 		string::size_type pos = file.rfind("/");
@@ -50,7 +50,7 @@ FileDialog::FileDialog(GMenu2X *gmenu2x, string text, string filter, string file
 bool FileDialog::exec() {
 	bool close = false, result = true, ts_pressed = false;
 	if (!fileExists(path()))
-		setPath("/mnt");
+		setPath("/boot/local");
 
 	fl.setFilter(filter);
 	fl.browse();
@@ -60,7 +60,7 @@ bool FileDialog::exec() {
 	uint numRows = (gmenu2x->resY-gmenu2x->skinConfInt["topBarHeight"]-20)/rowHeight;
 	SDL_Rect clipRect = {0, gmenu2x->skinConfInt["topBarHeight"]+1, gmenu2x->resX-9, gmenu2x->resY-gmenu2x->skinConfInt["topBarHeight"]-25};
 	SDL_Rect touchRect = {2, gmenu2x->skinConfInt["topBarHeight"]+4, gmenu2x->resX-12, clipRect.h};
-	
+
 	selected = 0;
 	while (!close) {
 		action = FD_NO_ACTION;
@@ -155,7 +155,7 @@ bool FileDialog::exec() {
 			} break;
 			case FD_ACTION_GOUP: {
 				string::size_type p = path().rfind("/");
-				if (p==string::npos || path().substr(0,4)!="/mnt" || p<4)
+				if (p==string::npos || path().substr(0,11)!="/boot/local" || p<4)
 					return false;
 				else
 					setPath( path().substr(0,p) );

@@ -33,7 +33,7 @@ private:
 	bool showDirectories, showFiles;
 
 public:
-	FileLister(string startPath = "/mnt/sd", bool showDirectories = true, bool showFiles = true);
+	FileLister(string startPath = "/boot/local", bool showDirectories = true, bool showFiles = true);
 	void browse();
 
 	vector<string> directories, files, exclude;

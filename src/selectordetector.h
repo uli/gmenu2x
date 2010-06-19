@@ -2,7 +2,7 @@
 #define SELECTORDETECTOR_H
 
 /* This class is for handling applications that use Kounch's Selector, to correctly import their settings to GMenu
- * It provides interfaces to examine the gpe file to detect Selector and from there, parse the config files.
+ * It provides interfaces to examine the dge file to detect Selector and from there, parse the config files.
  */
 
 
@@ -23,7 +23,7 @@ skinPath=./         //  use possibly
 cmdLine=./race      //  USE
 
 #path to base directory for file explorer
-baseDir=/mnt/sd/roms/ngpc/      //  USE
+baseDir=/boot/local/gmenu2x/roms/ngpc/      //  USE
 
 #File filters                   //  USE
 fileFilter=ngp

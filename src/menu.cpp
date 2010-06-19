@@ -185,8 +185,8 @@ bool Menu::addLink(string path, string file, string section) {
 	}
 	if (path[path.length()-1]!='/') path += "/";
 
-	//if the extension is not equal to gpu or gpe then enable the wrapepr by default
-	bool wrapper = true, pxml = false;
+	//if the extension is not equal to gpu or dge then enable the wrapepr by default
+	bool wrapper = false, pxml = false;
 
 	//strip the extension from the filename
 	string title = file;
@@ -194,7 +194,7 @@ bool Menu::addLink(string path, string file, string section) {
 	if (pos!=string::npos && pos>0) {
 		string ext = title.substr(pos, title.length());
 		transform(ext.begin(), ext.end(), ext.begin(), (int(*)(int)) tolower);
-		if (ext == ".gpu" || ext == ".gpe") wrapper = false;
+		if (ext == ".gpu" || ext == ".dge") wrapper = false;
 		else if (ext == ".pxml") pxml = true;
 		title = title.substr(0, pos);
 	}
@@ -269,10 +269,10 @@ bool Menu::addLink(string path, string file, string section) {
 		shorttitle = title;
 		exec = path+file;
 	}
-	
+
 	//Reduce title lenght to fit the link width
-	if ((int)gmenu2x->font->getTextWidth(shorttitle)>gmenu2x->skinConfInt["linkWidth"]) {
-		while ((int)gmenu2x->font->getTextWidth(shorttitle+"..")>gmenu2x->skinConfInt["linkWidth"])
+	if (gmenu2x->font->getTextWidth(shorttitle)>gmenu2x->skinConfInt["linkWidth"]) {
+		while (gmenu2x->font->getTextWidth(shorttitle+"..")>gmenu2x->skinConfInt["linkWidth"])
 			shorttitle = shorttitle.substr(0,shorttitle.length()-1);
 		shorttitle += "..";
 	}
@@ -286,26 +286,15 @@ bool Menu::addLink(string path, string file, string section) {
 		if (!manual.empty()) f << "manual=" << manual << endl;
 		if (wrapper) f << "wrapper=true" << endl;
 		f.close();
-
+ 		sync();
 		int isection = find(sections.begin(),sections.end(),section) - sections.begin();
 		if (isection>=0 && isection<(int)sections.size()) {
 #ifdef DEBUG
 			cout << "\033[0;34mGMENU2X:\033[0m Section: " << sections[isection] << "(" << isection << ")" << endl;
 #endif
- 
-			//senquack - fixing bug where adding a new link does not allow the new link
-			//					to be displayed correctly until menu is reloaded:
-			//senquack - orig. line:
-//			links[isection].push_back( new LinkApp(gmenu2x, linkpath.c_str()) );
- 
-			//senquack - new code (pulled from Menu::readLinks())
-			LinkApp *link = new LinkApp(gmenu2x, linkpath.c_str());
+			LinkApp* link = new LinkApp(gmenu2x, linkpath.c_str());
 			link->setSize(gmenu2x->skinConfInt["linkWidth"],gmenu2x->skinConfInt["linkHeight"]);
-			if (link->targetExists())
-				links[isection].push_back( link );
-			else
-				free(link);
- 
+			links[isection].push_back( link );
 		}
 	} else {
 #ifdef DEBUG

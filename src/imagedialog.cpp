@@ -36,7 +36,7 @@ ImageDialog::ImageDialog(GMenu2X *gmenu2x, string text, string filter, string fi
 	this->text = text;
 	this->filter = filter;
 	this->file = "";
-	setPath("/mnt");
+	setPath("/boot/local");
 	title = "Image Browser";
 	if (!file.empty()) {
 		file = strreplace(file,"skin:",gmenu2x->getExePath()+"skins/"+gmenu2x->confStr["skin"]+"/");

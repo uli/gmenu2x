@@ -45,6 +45,8 @@ const int BATTERY_READS = 10;
 
 const int LOOP_DELAY=30000;
 
+extern void jz_cpuspeed(unsigned clockspeed);
+
 using std::string;
 using fastdelegate::FastDelegate0;
 using google::dense_hash_map;
@@ -82,10 +84,10 @@ private:
 	@return A number representing battery charge. 0 means fully discharged. 5 means fully charged. 6 represents a gp2x using AC power.
 	*/
 	unsigned short getBatteryLevel();
-	int batteryHandle;
+	FILE* batteryHandle, *backlightHandle;
 	void browsePath(string path, vector<string>* directories, vector<string>* files);
 	/*!
-	Starts the scanning of the nand and sd filesystems, searching for gpe and gpu files and creating the links in 2 dedicated sections.
+	Starts the scanning of the nand and sd filesystems, searching for dge and gpu files and creating the links in 2 dedicated sections.
 	*/
 	void scanner();
 	/*!
@@ -120,13 +122,6 @@ private:
 	unsigned short *gp2x_memregs;
 	volatile unsigned short *MEM_REG;
 	int cx25874; //tv-out
-#endif
-#ifdef TARGET_WIZ
-	#define PLLSETREG0		(wiz_memregs[0xF004>>2])
-	#define PWRMODE			(wiz_memregs[0xF07C>>2])
-	#define SYS_CLK_FREQ 27
-	int wiz_mem;
-	volatile uint32_t *wiz_memregs;
 #endif
 	void gp2x_tvout_on(bool pal);
 	void gp2x_tvout_off();
@@ -182,7 +177,7 @@ public:
 	SurfaceCollection sc;
 	Translator tr;
 	Surface *s, *bg;
-	SFontPlus *font;
+	ASFont *font;
 
 	//Status functions
 	int main();
@@ -208,6 +203,9 @@ public:
 	int getVolume();
 	void setVolumeScaler(int scaler);
 	int getVolumeScaler();
+
+	void setBacklight(int val);
+	int getBackLight();
 
 	void setInputSpeed();
 

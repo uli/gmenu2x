@@ -24,14 +24,13 @@
 using namespace std;
 using namespace fastdelegate;
 
-MenuSettingInt::MenuSettingInt(GMenu2X *gmenu2x, string name, string description, int *value, int min, int max, int delta)
+MenuSettingInt::MenuSettingInt(GMenu2X *gmenu2x, string name, string description, int *value, int min, int max)
 	: MenuSetting(gmenu2x,name,description) {
 	this->gmenu2x = gmenu2x;
 	_value = value;
 	originalValue = *value;
 	this->min = min;
 	this->max = max;
-	this->delta = delta;
 	setValue(this->value());
 
 	//Delegates
@@ -69,11 +68,11 @@ void MenuSettingInt::manageInput() {
 }
 
 void MenuSettingInt::inc() {
-	setValue(value()+delta);
+	setValue(value()+1);
 }
 
 void MenuSettingInt::dec() {
-	setValue(value()-delta);
+	setValue(value()-1);
 }
 
 void MenuSettingInt::setValue(int value) {

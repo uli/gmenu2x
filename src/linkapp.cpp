@@ -37,15 +37,11 @@ LinkApp::LinkApp(GMenu2X *gmenu2x, const char* linkfile)
 	file = linkfile;
 	wrapper = false;
 	dontleave = false;
-#ifdef TARGET_GP2X
-	setClock(200);
-#endif
-#ifdef TARGET_WIZ
-	setClock(550);
-#endif
+	setClock(336);
 	setVolume(-1);
 	//G
-	setGamma(0);
+	//setGamma(0);
+	setBacklight(100);
 	selectordir = "";
 	selectorfilter = "";
 	icon = iconPath = "";
@@ -85,6 +81,8 @@ LinkApp::LinkApp(GMenu2X *gmenu2x, const char* linkfile)
 		//G
 		} else if (name == "gamma") {
 			setGamma( atoi(value.c_str()) );
+		} else if (name == "backlight") {
+			setBacklight( atoi(value.c_str()) );
 		} else if (name == "volume") {
 			setVolume( atoi(value.c_str()) );
 		} else if (name == "selectordir") {
@@ -141,12 +139,7 @@ string LinkApp::clockStr(int maxClock) {
 }
 
 void LinkApp::setClock(int mhz) {
-#ifdef TARGET_GP2X
-	iclock = constrain(mhz,50,325);
-#endif
-#ifdef TARGET_WIZ
-	iclock = constrain(mhz,50,900);
-#endif
+	iclock = constrain(mhz,200,430);
 	stringstream ss;
 	sclock = "";
 	ss << iclock << "Mhz";
@@ -176,6 +169,26 @@ void LinkApp::setVolume(int vol) {
 	edited = true;
 }
 
+int LinkApp::backlight()
+{
+	return ibacklight;
+}
+
+string LinkApp::backlightStr()
+{
+	return sbacklight;
+}
+
+void LinkApp::setBacklight(int val)
+{
+	ibacklight = constrain(val,5,100);
+	stringstream ss;
+	sbacklight = "";
+	ss << ibacklight;
+	ss >> sbacklight;
+
+	edited = true;
+}
 //G
 int LinkApp::gamma() {
 	return igamma;
@@ -197,7 +210,7 @@ void LinkApp::setGamma(int gamma) {
 // /G
 
 bool LinkApp::targetExists() {
-#if !defined(TARGET_GP2X) && !defined(TARGET_WIZ)
+#ifndef TARGET_GP2X
 	return true; //For displaying elements during testing on pc
 #endif
 
@@ -225,6 +238,7 @@ bool LinkApp::save() {
 		if (ivolume>0          ) f << "volume="          << ivolume         << endl;
 		//G
 		if (igamma!=0          ) f << "gamma="           << igamma          << endl;
+		if (ibacklight!=0      ) f << "backlight="       << ibacklight      << endl;		
 		if (selectordir!=""    ) f << "selectordir="     << selectordir     << endl;
 		if (selectorbrowser    ) f << "selectorbrowser=true"                << endl;
 		if (selectorfilter!="" ) f << "selectorfilter="  << selectorfilter  << endl;
@@ -233,6 +247,7 @@ bool LinkApp::save() {
 		if (wrapper            ) f << "wrapper=true"                        << endl;
 		if (dontleave          ) f << "dontleave=true"                      << endl;
 		f.close();
+		sync();
 		return true;
 	} else
 		cout << "\033[0;34mGMENU2X:\033[0;31m Error while opening the file '" << file << "' for write\033[0m" << endl;
@@ -277,7 +292,7 @@ void LinkApp::showManual() {
 	string ext8 = manual.substr(manual.size()-8,8);
 	if (ext8==".man.png" || ext8==".man.bmp" || ext8==".man.jpg" || manual.substr(manual.size()-9,9)==".man.jpeg") {
 		//Raise the clock to speed-up the loading of the manual
-		gmenu2x->setClock(200);
+		gmenu2x->setClock(336);
 
 		Surface pngman(manual);
 		Surface bg(gmenu2x->confStr["wallpaper"],false);
@@ -329,7 +344,7 @@ void LinkApp::showManual() {
 		string line;
 		ifstream infile(manual.c_str(), ios_base::in);
 		if (infile.is_open()) {
-			gmenu2x->setClock(200);
+			gmenu2x->setClock(336);
 			while (getline(infile, line, '\n')) txtman.push_back(line);
 			infile.close();
 
@@ -347,7 +362,7 @@ void LinkApp::showManual() {
 	string line;
 	ifstream infile(manual.c_str(), ios_base::in);
 	if (infile.is_open()) {
-		gmenu2x->setClock(200);
+		gmenu2x->setClock(336);
 		while (getline(infile, line, '\n')) readme.push_back(line);
 		infile.close();
 
@@ -370,7 +385,7 @@ void LinkApp::selector(int startSelection, string selectorDir) {
 void LinkApp::launch(string selectedFile, string selectedDir) {
 	drawRun();
 	save();
-#if !defined(TARGET_GP2X) && !defined(TARGET_WIZ)
+#ifndef TARGET_GP2X
 	//delay for testing
 	SDL_Delay(1000);
 #endif
@@ -446,11 +461,14 @@ void LinkApp::launch(string selectedFile, string selectedDir) {
 			gmenu2x->writeConfigOpen2x();
 		if (selectedFile=="")
 			gmenu2x->writeTmp();
-		gmenu2x->quit();
+         	gmenu2x->quit();
 		if (clock()!=gmenu2x->confInt["menuClock"])
 			gmenu2x->setClock(clock());
-		if (gamma()!=0 && gamma()!=gmenu2x->confInt["gamma"])
-			gmenu2x->setGamma(gamma());
+		//if (gamma()!=0 && gamma()!=gmenu2x->confInt["gamma"])
+		//	gmenu2x->setGamma(gamma());
+		if((backlight() != 0) && (backlight() != gmenu2x->confInt["backlight"]))
+			gmenu2x->setBacklight(backlight());
+
 		execlp("/bin/sh","/bin/sh","-c",command.c_str(),NULL);
 		//if execution continues then something went wrong and as we already called SDL_Quit we cannot continue
 		//try relaunching gmenu2x

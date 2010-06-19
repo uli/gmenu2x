@@ -38,7 +38,7 @@ DirDialog::DirDialog(GMenu2X *gmenu2x, string text, string dir) {
 	this->text = text;
 	selRow = 0;
 	if (dir.empty())
-		path = "/mnt";
+		path = "/boot/local";
 	else
 		path = dir;
 
@@ -46,7 +46,7 @@ DirDialog::DirDialog(GMenu2X *gmenu2x, string text, string dir) {
 	ButtonAction actionUp = MakeDelegate(this, &DirDialog::up);
 	ButtonAction actionEnter = MakeDelegate(this, &DirDialog::enter);
 	ButtonAction actionConfirm = MakeDelegate(this, &DirDialog::confirm);
-	
+
 	btnUp = new IconButton(gmenu2x, "skin:imgs/buttons/x.png", gmenu2x->tr["Up one folder"]);
 	btnUp->setAction(actionUp);
 
@@ -60,9 +60,9 @@ DirDialog::DirDialog(GMenu2X *gmenu2x, string text, string dir) {
 bool DirDialog::exec() {
 	bool ts_pressed = false;
 	uint i, firstElement = 0, iY, action;
-	
+
 	if (!fileExists(path))
-		path = "/mnt";
+		path = "/boot/local";
 
 	fl = new FileLister(path,true,false);
 	fl->browse();
@@ -70,7 +70,7 @@ bool DirDialog::exec() {
 	selected = 0;
 	close = false;
 	result = true;
-	
+
 	uint rowHeight = gmenu2x->font->getHeight()+1; // gp2x=15+1 / pandora=19+1
 	uint numRows = (gmenu2x->resY-gmenu2x->skinConfInt["topBarHeight"]-20)/rowHeight;
 	SDL_Rect clipRect = {0, gmenu2x->skinConfInt["topBarHeight"]+1, gmenu2x->resX-9, gmenu2x->resY-gmenu2x->skinConfInt["topBarHeight"]-25};
@@ -78,7 +78,7 @@ bool DirDialog::exec() {
 	while (!close) {
 		action = DirDialog::ACT_NONE;
 		if (gmenu2x->f200) gmenu2x->ts.poll();
-		
+
 		gmenu2x->bg->blit(gmenu2x->s,0,0);
 		gmenu2x->drawTitleIcon("icons/explorer.png",true);
 		gmenu2x->writeTitle("Directory Browser");
@@ -173,7 +173,7 @@ bool DirDialog::exec() {
 			} break;
 		}
 	}
-	
+
 	delete(fl);
 
 	return result;
@@ -181,7 +181,7 @@ bool DirDialog::exec() {
 
 void DirDialog::up() {
 	string::size_type p = path.rfind("/");
-	if (p==string::npos || path.substr(0,4)!="/mnt" || p<4) {
+	if (p==string::npos || path.substr(0,11)!="/boot/local" || p<4) {
 		close = true;
 		result = false;
 	} else {
