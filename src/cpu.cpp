@@ -3,8 +3,13 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "jz4740.h"
+#include <string.h>
 #include "cpu.h"
+#include "jz4740.h"
+
+static unsigned long jz_dev;
+static volatile unsigned long  *jz_cpmregl, *jz_emcregl;
+volatile unsigned short *jz_emcregs; 
 
 inline int sdram_convert(unsigned int pllin,unsigned int *sdram_freq)
 {
@@ -23,6 +28,9 @@ inline int sdram_convert(unsigned int pllin,unsigned int *sdram_freq)
  
 void pll_init(unsigned int clock)
 {
+        /* round down to multiple of 24 MHz to get accurate pixclock */
+        clock = (clock / 24000000) * 24000000;
+
 	register unsigned int cfcr, plcr1;
 	unsigned int sdramclock = 0;
 	int n2FR[33] = {
@@ -58,6 +66,7 @@ void pll_init(unsigned int clock)
 //	REG_CPM_CPCCR = cfcr;
 //	REG_CPM_CPPCR = plcr1;
       	jz_cpmregl[0] = cfcr;
+    	jz_cpmregl[0x64>>2] = clock / 12000000 / 2 - 1; /* pixclock */
     	jz_cpmregl[0x10>>2] = plcr1;
 	
   	sdram_convert(clock,&sdramclock);
@@ -79,20 +88,29 @@ void pll_init(unsigned int clock)
 
 void jz_cpuspeed(unsigned clockspeed) 
 {
-	if (clockspeed >= 200 && clockspeed <= 430)
+	if (clockspeed >= 192 && clockspeed <= 432)
 	{
-		jz_dev = open("/dev/mem", O_RDWR);  
-		if(jz_dev)
-		{
-			jz_cpmregl=(unsigned long  *)mmap(0, 0x80, PROT_READ|PROT_WRITE, MAP_SHARED, jz_dev, 0x10000000);
-			jz_emcregl=(unsigned long  *)mmap(0, 0x90, PROT_READ|PROT_WRITE, MAP_SHARED, jz_dev, 0x13010000);
-			jz_emcregs=(unsigned short *)jz_emcregl;
-			pll_init(clockspeed*1000000);
-			munmap((void *)jz_cpmregl, 0x80); 
-			munmap((void *)jz_emcregl, 0x90); 	
-			close(jz_dev);
-		}
-		else
-			printf("failed opening /dev/mem \n");
+	        jz_dev = open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed", O_RDWR);
+	        if (jz_dev) {
+	                char freq[7];
+	                sprintf(freq, "%d", clockspeed * 1000);
+	                write(jz_dev, freq, strlen(freq));
+	                close(jz_dev);
+	        }
+	        else {
+                        jz_dev = open("/dev/mem", O_RDWR);  
+                        if(jz_dev)
+                        {
+                                jz_cpmregl=(unsigned long  *)mmap(0, 0x80, PROT_READ|PROT_WRITE, MAP_SHARED, jz_dev, 0x10000000);
+                                jz_emcregl=(unsigned long  *)mmap(0, 0x90, PROT_READ|PROT_WRITE, MAP_SHARED, jz_dev, 0x13010000);
+                                jz_emcregs=(unsigned short *)jz_emcregl;
+                                pll_init(clockspeed*1000000);
+                                munmap((void *)jz_cpmregl, 0x80); 
+                                munmap((void *)jz_emcregl, 0x90); 	
+                                close(jz_dev);
+                        }
+                        else
+                                printf("failed opening /dev/mem \n");
+                }
 	}
 }

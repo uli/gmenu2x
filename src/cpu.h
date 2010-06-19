@@ -13,9 +13,6 @@
 #define SDRAM_TREF	        15625	/* Refresh period: 4096 refresh cycles/64ms */ 
 //#define SDRAM_TREF      7812  /* Refresh period: 8192 refresh cycles/64ms */
 
-static unsigned long jz_dev;
-static volatile unsigned long  *jz_cpmregl, *jz_emcregl;
-volatile unsigned short *jz_emcregs; 
 
 void jz_cpuspeed(unsigned clockspeed);
 void pll_init(unsigned int clock);
